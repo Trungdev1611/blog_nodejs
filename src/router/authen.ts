@@ -35,7 +35,7 @@ const routerAuth = Router();
  *             $ref: '#/components/schemas/auth'
  */
 
-const schema = Joi.object({
+const ruleLogin = Joi.object({
   username: Joi.string()
       .alphanum()
       .min(3)
@@ -59,7 +59,7 @@ const schema = Joi.object({
 
 routerAuth.post("/login", (req: Request, res: Response) => {
   console.log(req.body)
-  const {error, value} = schema.validate(req.body)
+  const {error, value} = ruleLogin.validate(req.body)
   if(error) {
     res.status(400).json({error: error.details[0].message});   //trả về message lỗi khi bất kỳ trường nào là không hợp lệ
     return 
@@ -93,9 +93,19 @@ routerAuth.post("/login", (req: Request, res: Response) => {
  *         description: Thành công
  */
 
+const ruleRegister = ruleLogin.keys({
+  repeatPassword: Joi.valid(Joi.ref('password'))
+  .required()
+})
 routerAuth.post("/register", (req: Request, res: Response) => {
+  const {error, value} = ruleRegister.validate(req.body)
+  if(error) {
+    res.status(400).json({error: error.details[0].message});   //trả về message lỗi khi bất kỳ trường nào là không hợp lệ
+    return 
+  }
   res.status(200).json({
     message: "register thành công",
+    data: value
   });
 });
 export default routerAuth;
